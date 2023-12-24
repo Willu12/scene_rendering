@@ -153,14 +153,14 @@ impl Grid {
         self.normal_map.as_ref().unwrap().load(path);
     }
 
-    unsafe fn set_mesh_uniforms(&self,i: i32)  {
+    unsafe fn set_mesh_uniforms(&self)  {
         let tessellation_level_location = get_uniform_location(self.mesh_program,"TessLevel");
-        self.set_matrices(self.mesh_program,i);
+        self.set_matrices(self.mesh_program);
         gl::Uniform1ui(tessellation_level_location,self.tessellation_level);
     }
 
 
-    unsafe fn set_uniforms(&self,i :i32) {
+    unsafe fn set_uniforms(&self) {
         unsafe {
             let light_pos_location = get_uniform_location(self.program,"lightPos");
             let camera_pos_location = get_uniform_location(self.program,"cameraPos");
@@ -177,7 +177,7 @@ impl Grid {
 
             let tessellation_level_location = get_uniform_location(self.program,"TessLevel");
 
-            self.set_matrices(self.program,i);
+            self.set_matrices(self.program);
             gl::Uniform1ui(tessellation_level_location,self.tessellation_level);
 
             let light_pos = self.light.light_position;
@@ -195,7 +195,7 @@ impl Grid {
         }
     }
 
-    fn set_matrices(&self,program: GLuint,i:i32) {
+    fn set_matrices(&self,program: GLuint) {
         let view = self.camera.get_view();
         let projection =glam::Mat4::perspective_lh(
             std::f32::consts::PI / 2.0,
@@ -203,16 +203,7 @@ impl Grid {
             0.1,
             100.0);
 
-        let mut modal = Mat4::IDENTITY;
-        if i == 0 {
-            modal *= Mat4::from_rotation_x(self.angle);
-        }
-        else if i == 1 {
-            modal *= Mat4::from_rotation_y(self.angle);
-        }
-        else {
-            modal *= Mat4::from_rotation_z(self.angle);
-        }
+        let modal = Mat4::from_rotation_x(self.angle);
 
 
         let mvp = projection * view * modal;
@@ -261,11 +252,9 @@ impl Grid {
         unsafe {
             gl::DepthFunc(gl::LESS);
             gl::BindVertexArray(self.vao);
-
-            for i in 0..3 {
                 if self.fill {
                     gl::UseProgram(self.program);
-                    self.set_uniforms(i);
+                    self.set_uniforms();
                     self.prepare_textures();
                     self.prepare_normal_map();
                     gl::DrawArrays(gl::PATCHES,0,16);
@@ -275,13 +264,12 @@ impl Grid {
                     gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
 
                     gl::UseProgram(self.mesh_program);
-                    self.set_mesh_uniforms(i);
-                    self.set_uniforms(i);
+                    self.set_mesh_uniforms();
+                    self.set_uniforms();
 
                     gl::DrawArrays(gl::PATCHES,0,16);
                     gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
                 }
-            }
 
 
             gl::DepthFunc(gl::ALWAYS);
