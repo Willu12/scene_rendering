@@ -17,6 +17,8 @@ mod camera;
 mod egui_manager;
 mod light;
 mod texture;
+mod model;
+mod mesh;
 
 const SCREEN_WIDTH: u32 = 1000;
 const SCREEN_HEIGHT: u32 = 800;
@@ -37,7 +39,7 @@ fn main() {
 
     let window = video_subsystem
         .window(
-            "triangle-filler",
+            "scene-rendering",
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
         )
@@ -85,11 +87,6 @@ fn main() {
     let mut main_light = true;
 
     let mut grid = grid::Grid::new();
-    unsafe{
-        //grid.add_texture(&Path::new("resources/images/texture.jpg"));
-        //grid.add_normal_map(&Path::new("resources/images/normal.jpg"));
-
-    }
     unsafe {
         gl::Enable(gl::DEPTH_TEST);
         gl::DepthFunc(gl::LESS);
@@ -115,6 +112,7 @@ fn main() {
         if grid.light.is_moving != is_light_moving {
             if is_light_moving {grid.light.start_moving()} else {grid.light.stop_moving()}
         }
+        
         if grid.color != object_color && texture_set == false {grid.color = object_color}
         if grid.light.light_color != light_color  {grid.light.light_color = light_color};
         grid.mesh = mesh;

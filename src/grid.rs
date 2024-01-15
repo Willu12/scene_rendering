@@ -4,7 +4,7 @@ use std::mem;
 use std::path::Path;
 use std::ptr;
 use std::str;
-use glam::{Mat3, Mat4, Vec3, Vec4Swizzles};
+use glam::{Mat3, Mat4, Vec4Swizzles};
 use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::camera::Camera;
 use crate::light::Light;
@@ -34,20 +34,19 @@ pub struct Grid {
 }
 
 impl Grid {
+
+
     pub fn new() -> Self {
 
         let mut vertices = Grid::create_patch_vertices();
 
         let (mut vao,mut vbo,mut ebo) = (0,0,0);
-        let vs = Shader::new(VS_SRC, gl::VERTEX_SHADER);
-        let fs = Shader::new(FS_SRC, gl::FRAGMENT_SHADER);
-        let tcs = Shader::new(TCS_SRC,gl::TESS_CONTROL_SHADER);
-        let tes = Shader::new(TES_SRC,gl::TESS_EVALUATION_SHADER);
 
-        let fsm = Shader::new(FSM_SRC,gl::FRAGMENT_SHADER);
-        let vsm = Shader::new(VS_SRC, gl::VERTEX_SHADER);
-        let tcsm = Shader::new(TCS_SRC,gl::TESS_CONTROL_SHADER);
-        let tesm = Shader::new(TES_SRC,gl::TESS_EVALUATION_SHADER);
+        let (vs,fs,tcs,tes) = create_shaders(VS_SRC,
+                                             FS_SRC,TCS_SRC,TES_SRC);
+
+        let (fsm, vsm, tcsm, tesm) = create_shaders(VS_SRC,
+                                                    FSM_SRC,TCS_SRC,TES_SRC);
 
         let program = link_program(vs.id, fs.id,tcs.id,tes.id);
         let mesh_program = link_program(vsm.id,fsm.id,tcsm.id,tesm.id);
@@ -65,20 +64,18 @@ impl Grid {
         let tessellation_level = 1;
         let texture = None;
         let normal_map = None;
+        let reflectors = true;
+        let main_light = true;
+        let angle = 0.0;
+        let mesh = false;
+        let fill = true;
 
-        let grid = Grid {tessellation_level, vertices, vao, vbo, ebo, program,mesh_program, color, camera,light,texture,normal_map, fill: true, mesh : true, reflectors:true,main_light:true,angle: 0.0};
+        let grid = Grid {tessellation_level, vertices, vao, vbo, ebo,
+            program,mesh_program, color, camera,light,texture,normal_map,
+            fill, mesh, reflectors,main_light,angle};
+
         grid.init_grid();
-
-        unsafe {
-            gl::UseProgram(program);
-
-            let text_map_location = get_uniform_location(program,"ourTexture");
-            let normal_map_location = get_uniform_location(program,"normalMap");
-
-            gl::Uniform1i(text_map_location,0);
-            gl::Uniform1i(normal_map_location,1);
-        }
-
+        
         return grid;
     }
 
@@ -332,5 +329,15 @@ pub fn link_program(vs: GLuint, fs: GLuint,tcs: GLuint, tes: GLuint) -> GLuint {
         }
         program
     }
+}
+
+
+fn create_shaders(vs_path: &str, fs_path: &str, tcs_path: &str, tes_path: &str) -> (Shader,Shader,Shader,Shader) {
+    let vs = Shader::new(vs_path, gl::VERTEX_SHADER);
+    let fs = Shader::new(fs_path, gl::FRAGMENT_SHADER);
+    let tcs = Shader::new(tcs_path,gl::TESS_CONTROL_SHADER);
+    let tes = Shader::new(tes_path,gl::TESS_EVALUATION_SHADER);
+
+    return (vs,fs,tcs,tes);
 }
 

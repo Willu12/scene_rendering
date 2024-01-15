@@ -12,6 +12,7 @@ pub const TES_SRC: &'static str = "resources/shaders/tessellationEvaluationShade
 pub const FSM_SRC: &'static str = "resources/shaders/fragmentMeshShader.glsl";
 
 
+#[derive(Clone,Copy)]
 pub struct Shader {
     pub id : GLuint,
 }
