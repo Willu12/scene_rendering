@@ -1,7 +1,9 @@
+use std::ops::Add;
 use std::ptr;
 use glam::{Vec2, Vec3};
 use egui_sdl2_gl::gl;
 use egui_sdl2_gl::gl::types::{GLsizei, GLvoid};
+use crate::grid::get_uniform_location;
 use crate::shader::Shader;
 
 
@@ -38,7 +40,7 @@ impl Mesh {
         let mut diffuse_nr: u32 = 0;
         let mut specular_nr: u32 = 0;
 
-        for texture in self.textures.iter() {
+        for (i,texture) in self.textures.iter().enumerate() {
 
             let number = match &texture.texture_type[..] {
                 "texture_diffuse" => {diffuse_nr+=1; diffuse_nr.to_string()},
@@ -46,9 +48,21 @@ impl Mesh {
                 _ => "0".to_string()
             };
 
+            if number == "0" {continue};
+            unsafe {
+                gl::Uniform1i(get_uniform_location(shader.id,texture.texture_type.clone().add(number.as_str()).as_str()),
+                i as gl::types::GLint);
 
+                gl::BindTexture(gl::TEXTURE_2D, texture.id);
+            }
 
-
+            //draw mesh
+            unsafe {
+                gl::BindVertexArray(self.vao);
+                gl::DrawElements(gl::TRIANGLES, self.indices.len() as GLsizei, gl::UNSIGNED_INT, ptr::null_mut());
+                gl::BindVertexArray(0);
+                gl::ActiveTexture(gl::TEXTURE0);
+            }
         }
     }
 

@@ -35,7 +35,6 @@ pub struct Grid {
 
 impl Grid {
 
-
     pub fn new() -> Self {
 
         let mut vertices = Grid::create_patch_vertices();
@@ -280,7 +279,7 @@ impl Grid {
     pub fn remove_normal_map(&mut self) {self.normal_map = None;}
 }
 
-unsafe fn get_uniform_location(program: GLuint, uniform_name: &str) -> GLint {
+pub unsafe fn get_uniform_location(program: GLuint, uniform_name: &str) -> GLint {
     let cname = std::ffi::CString::new(uniform_name).expect("CString::new failed");
 
     unsafe {
