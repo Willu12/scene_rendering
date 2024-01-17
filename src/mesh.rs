@@ -10,7 +10,10 @@ use crate::shader::Shader;
 pub struct Vertex {
     position: Vec3,
     normal: Vec3,
-    tex_coords: Vec2
+    tex_coords: Vec2,
+    tangent: Vec3,
+    bitangent: Vec3,
+
 }
 
 pub struct Texture {
